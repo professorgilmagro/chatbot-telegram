@@ -1,0 +1,296 @@
+{
+  "name": "Bot de Clima Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "2bcac993-fe80-41ff-80c4-f5dddf9aa405",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        224,
+        304
+      ],
+      "webhookId": "f7def667-bb89-4d6d-8bc3-3b1eb0c8cf8e",
+      "credentials": {
+        "telegramApi": {
+          "id": "Hb9beO1Dp8KvqMiT",
+          "name": "Telegram Weather Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.message.text || '';\nconst queue = text.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nreturn { queue };"
+      },
+      "id": "e44431d1-6784-4822-ba78-75c1284fbfac",
+      "name": "Format Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.queue }}"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            },
+            {
+              "name": "lang",
+              "value": "pt_br"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "fb212ae1-0266-41dd-a36c-9ba168969f69",
+      "name": "OpenWeather API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        672,
+        304
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "sINCHq68zFMs5oaq",
+          "name": "Openweather Api Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "d0494dfa-c5ad-4d43-9ce6-5fe1ceb27cb0",
+      "name": "Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        384
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BuzcnMejoEYwB7Wq",
+          "name": "Google Gemini Api"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1dfd4da-27f2-43bb-a5a4-0dc8c4d7bb15",
+              "leftValue": "={{ Number($json.cod) }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3be587fe-f198-4ad0-a9cf-dd37803a64d1",
+      "name": "Check Response",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\nconst mensagemF = `🌤 A temperatura em ${city} é de ${temp}°C.`;\nreturn { message: mensagemF, ok: true };"
+      },
+      "id": "7fa12bf1-f2cb-465f-ac22-e4210d1fa7a8",
+      "name": "Format Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "❌ Cidade não encontrada. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR).",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "766ccecc-7299-4c8d-8a5f-0a0fc40e909a",
+      "name": "Send Error Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        432
+      ],
+      "webhookId": "b9466aac-086b-42ef-b09e-f8129a5adfb2",
+      "credentials": {
+        "telegramApi": {
+          "id": "Hb9beO1Dp8KvqMiT",
+          "name": "Telegram Weather Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "3d596ac1-b1e6-42d4-ba5f-2b36365ea0ab",
+      "name": "Send Success Mesaage (Gemini/Fallback)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        192
+      ],
+      "webhookId": "1e89b9a7-8878-4aff-9ea9-fa1e99525ce3",
+      "credentials": {
+        "telegramApi": {
+          "id": "Hb9beO1Dp8KvqMiT",
+          "name": "Telegram Weather Bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Input": {
+      "main": [
+        [
+          {
+            "node": "OpenWeather API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeather API": {
+      "main": [
+        [
+          {
+            "node": "Check Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini": {
+      "main": [
+        [
+          {
+            "node": "Send Success Mesaage (Gemini/Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Response": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Result": {
+      "main": [
+        [
+          {
+            "node": "Google Gemini",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Success Mesaage (Gemini/Fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "2fb2bab3-e7a1-4d0d-adcd-f89b72bc8cf2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f814927797f32f217cd3e520758cda8c4caaec080ea7137fd53477c2b3ebaaa6"
+  },
+  "id": "SzDEn5eG6L9ErzWC",
+  "tags": []
+}

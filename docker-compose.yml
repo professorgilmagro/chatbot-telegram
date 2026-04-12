@@ -1,0 +1,133 @@
+services:
+  n8n-ui:
+    image: n8nio/n8n:1.122.4
+    container_name: n8n-ui
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - TZ=America/Sao_Paulo
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+
+      ## Postgres
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=postgres
+      - DB_POSTGRESDB_HOST=n8n-postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=postgres
+      - DB_POSTGRESDB_PASSWORD=postgres
+
+      ## Queue Mode
+      - EXECUTIONS_MODE=regular
+      - QUEUE_REDIS_HOST=redis
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - n8n-network
+    restart: always
+
+  n8n-worker:
+    image: n8nio/n8n:1.122.4
+    command: worker
+    container_name: n8n-worker
+    ports:
+      - "5679:5678"
+    environment:
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - WEBHOOK_URL=https://inexperienced-anthony-unvertiginously.ngrok-free.dev
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - TZ=America/Sao_Paulo
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+
+      ## Postgres
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_DATABASE=postgres
+      - DB_POSTGRESDB_HOST=n8n-postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=postgres
+      - DB_POSTGRESDB_PASSWORD=postgres
+
+      ## Queue Mode
+      - EXECUTIONS_MODE=regular
+      - QUEUE_REDIS_HOST=redis
+      - OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - n8n-network
+    restart: always
+
+  postgres:
+    container_name: n8n-postgres
+    image: ankane/pgvector
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n-network
+    restart: always
+
+  redis:
+    container_name: n8n-redis
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis_data:/data
+    networks:
+      - n8n-network
+    restart: always
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - n8n-network
+
+  ngrok:
+    container_name: ngrok
+    image: ngrok/ngrok:latest
+    ports:
+      - 4040:4040
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    command: http --domain=inexperienced-anthony-unvertiginously.ngrok-free.dev n8n-ui:5678
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTH_TOKEN}
+    networks:
+      - n8n-network
+    restart: always
+
+networks:
+  n8n-network:
+    driver: bridge
