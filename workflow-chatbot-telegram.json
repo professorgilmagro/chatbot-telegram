@@ -84,28 +84,6 @@
     },
     {
       "parameters": {
-        "options": {
-          "temperature": 0.2
-        }
-      },
-      "id": "d0494dfa-c5ad-4d43-9ce6-5fe1ceb27cb0",
-      "name": "Google Gemini",
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        1360,
-        384
-      ],
-      "credentials": {
-        "googlePalmApi": {
-          "id": "BuzcnMejoEYwB7Wq",
-          "name": "Google Gemini Api"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -139,7 +117,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\nconst mensagemF = `🌤 A temperatura em ${city} é de ${temp}°C.`;\nreturn { message: mensagemF, ok: true };"
+        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\nconst message = `🌤 A temperatura em ${city} é de ${temp}°C.`;\nreturn { \n  message: message, \n  condition: $input.first().json.weather[0].description,\n  ok: true\n};"
       },
       "id": "7fa12bf1-f2cb-465f-ac22-e4210d1fa7a8",
       "name": "Format Result",
@@ -176,19 +154,40 @@
     },
     {
       "parameters": {
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "d0494dfa-c5ad-4d43-9ce6-5fe1ceb27cb0",
+      "name": "Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        400
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BuzcnMejoEYwB7Wq",
+          "name": "Google Gemini Api"
+        }
+      }
+    },
+    {
+      "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "={{ $json.message }}",
+        "text": "={{ $json.text }}",
         "additionalFields": {
           "appendAttribution": false
         }
       },
       "id": "3d596ac1-b1e6-42d4-ba5f-2b36365ea0ab",
-      "name": "Send Success Mesaage (Gemini/Fallback)",
+      "name": "Send AI Message",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        1584,
-        192
+        1664,
+        48
       ],
       "webhookId": "1e89b9a7-8878-4aff-9ea9-fa1e99525ce3",
       "credentials": {
@@ -197,6 +196,45 @@
           "name": "Telegram Weather Bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fallback-node-tg",
+      "name": "Fallback Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        304
+      ],
+      "webhookId": "86fd96b6-22b1-4369-9263-e09dede1b450",
+      "credentials": {
+        "telegramApi": {
+          "id": "Hb9beO1Dp8KvqMiT",
+          "name": "Telegram Weather Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Você é um assistente responsável por melhorar mensagens de previsão do tempo vindas de uma API.\n\nSua tarefa é reescrever a mensagem original tornando-a mais natural, clara e agradável para leitura humana.\n\n---\n\n### 🎯 REGRA PRINCIPAL (OBRIGATÓRIA - NUNCA QUEBRAR)\nA mensagem final deve sempre:\n- Ser natural e fluida em português do Brasil\n- Estar correta gramaticalmente\n- Ser clara e fácil de entender\n- Manter fidelidade total aos dados da API\n- Resolver ambiguidades (ex: diferenciar cidade, estado, país)\n\nSe qualquer outra regra entrar em conflito com esta, IGNORE a outra regra.\n\n---\n\n### 🌎 REGIONALISMO (OPCIONAL E CONTROLADO)\nVocê pode adaptar levemente o tom usando expressões regionais brasileiras, desde que:\n\n- NÃO prejudique clareza ou compreensão\n- NÃO use gírias excessivas ou caricatas\n- NÃO force regionalismo se não for natural\n- A frase ainda deve ser compreendida por qualquer brasileiro\n\nExemplos aceitáveis:\n- \"Por lá\" em vez de repetir o local\n- Pequenas variações de tom (ex: “clima agradável”, “tempo firme”)\n\nExemplos NÃO aceitáveis:\n- Gírias pesadas ou muito locais (ex: \"bah tri frio\", \"mano mó calor\")\n- Linguagem informal demais\n- Qualquer coisa que pareça estereotipada\n\nSe houver dúvida, NÃO use regionalismo.\n\n---\n\n### 📏 REGRAS GERAIS\n- NÃO altere os dados (temperatura, local, condição)\n- NÃO invente informações\n- Pode reorganizar a frase livremente\n- Pode adicionar contexto leve (ex: “neste momento”, “agora”)\n- Emojis são opcionais\n\n---\n\n### 📥 Entrada\n {{ $json.message }}, {{ $json.condition }}\n---\n\n### 📤 Saída\nRetorne apenas a mensagem final melhorada, sem explicações\n"
+      },
+      "id": "e3a89047-97d8-4f93-86f7-abc123456789",
+      "name": "AI Text Enhancer",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        1344,
+        192
+      ],
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -234,17 +272,6 @@
         ]
       ]
     },
-    "Google Gemini": {
-      "main": [
-        [
-          {
-            "node": "Send Success Mesaage (Gemini/Fallback)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Check Response": {
       "main": [
         [
@@ -267,12 +294,36 @@
       "main": [
         [
           {
-            "node": "Google Gemini",
+            "node": "AI Text Enhancer",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Google Gemini": {
+      "ai_languageModel": [
+        [
           {
-            "node": "Send Success Mesaage (Gemini/Fallback)",
+            "node": "AI Text Enhancer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Text Enhancer": {
+      "main": [
+        [
+          {
+            "node": "Send AI Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback Message",
             "type": "main",
             "index": 0
           }
@@ -286,7 +337,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "2fb2bab3-e7a1-4d0d-adcd-f89b72bc8cf2",
+  "versionId": "a8746779-4df7-4b13-be69-1c8eb233edd8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f814927797f32f217cd3e520758cda8c4caaec080ea7137fd53477c2b3ebaaa6"
