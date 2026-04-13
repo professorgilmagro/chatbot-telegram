@@ -1,4 +1,5 @@
-# Chatbot de Clima do Telegram 🌦️
+
+![diagram.png](diagram.png)
 
 Projeto do Bot de Clima no Telegram criado utilizando **n8n**! Este workflow conecta a sua conta do Telegram a um bot que informa a temperatura atual de qualquer cidade via a API do **OpenWeather**, além de contar, opcionalmente, com IA do **Google Gemini** para melhorar as respostas.
 
@@ -13,6 +14,7 @@ Projeto do Bot de Clima no Telegram criado utilizando **n8n**! Este workflow con
 ## 📥 Como importar o workflow
 
 Dentro do seu painel do n8n:
+
 1. No menu esquerdo, acesse **Workflows** e clique em **Add Workflow**.
 2. No menu superior direito da tela de edição do workflow, acesse **[•••] > Import from file**.
 3. Selecione o arquivo `workflow-chatbot-telegram.json` incluído neste repositório.
@@ -23,6 +25,7 @@ Dentro do seu painel do n8n:
 Para que o projeto funcione adequadamente, você precisará preencher as credenciais diretamente no painel do N8N.
 
 ### 1. Telegram Bot
+
 1. Crie seu bot com o `@BotFather` no Telegram e copie o Token gerado.
 2. Acesse no painel esquerdo do n8n: **Credentials > Add Credential**.
 3. Procure por `Telegram API` e clique para criar.
@@ -31,6 +34,7 @@ Para que o projeto funcione adequadamente, você precisará preencher as credenc
 6. **Atenção:** É perfeitamente normal que o n8n mostre um campo com o texto "Select Credential" nos nós do Telegram. Basta você clicar nesse *dropdown* nos 3 nós (Telegram Trigger, Envia Sucesso e Envia Erro) e selecionar a credencial "Telegram Weather Bot" que você acabou de criar.
 
 ### 2. OpenWeather API
+
 1. Crie uma conta no `home.openweathermap.org` e pegue sua API Key.
 2. No N8N, abra o nó **"OpenWeather API"** e, em **Authentication**, mude para **Generic Credential Type**.
 3. Em **Generic Auth Type**, selecione **Query Auth**.
@@ -38,7 +42,9 @@ Para que o projeto funcione adequadamente, você precisará preencher as credenc
 5. Na janela da credencial, defina o **Name** como `appid` e no **Value** cole o seu TOKEN do OpenWeather. Salve e selecione essa credencial no nó.
 
 ### 3. Google Gemini API (Opcional)
+
 Esse passo foi configurado usando uma Corrente Básica de IA (Basic LLM Chain) conectada ao modelo do Gemini para atuar como formatador natural, garantindo o "Fallback" correto (Plano B) em caso de instabilidade:
+
 1. Crie ou recupere sua chave de API gratuitamente em `aistudio.google.com/app/apikey`.
 2. No n8n acesse: **Credentials > Add Credential**, busque por **Google Gemini API** e insira a chave gerada.
 3. Feito isso, conecte a credencial criada no nó **Google Gemini** (que atua como cérebro conectado ao nó principal "AI Text Enhancer").
@@ -50,10 +56,10 @@ Para começar as consultas em fase de testes (Development/Testing):
 1. **Ative a escuta (listening):** Clique em **"Execute Workflow"** na parte inferior da tela do seu n8n.
 2. **Envie a Cidade:** No seu aplicativo Telegram, vá até a conversa com o bot recém-criado e envie uma cidade para testar.
    - **Exemplo de Envio:** `Belo Horizonte,MG,BR`, `São Paulo,SP,BR` ou ainda, somente a cidade `São Paulo`
-3. **O que esperar de retorno no Sucesso:** Em média de 2 segundos, pelo menos o nó deverá carregar e responder com sucesso: 
-   _🌤 A temperatura em São Paulo é de 25°C_ (Podendo vir reescrito de forma mais descontraída caso a API do Gemini esteja configurada).
+3. **O que esperar de retorno no Sucesso:** Em média de 2 segundos, pelo menos o nó deverá carregar e responder com sucesso:
+   *🌤 A temperatura em São Paulo é de 25°C* (Podendo vir reescrito de forma mais descontraída caso a API do Gemini esteja configurada).
 4. **O que esperar de retorno no Erro:** Caso você envie uma cidade fictícia (ex: `LugarNenhum`), o bot enviará a mensagem padrão:
-   _❌ Cidade não encontrada. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR)._
+   *❌ Cidade não encontrada. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR).*
 
 **Para manter online 24/7:**
 Quando os testes derem certo, lembre-se de ativar o gatilho principal marcando a chave **Active** (no canto superior direito do workflow). Assim ele responderá sempre que uma pessoa chamar, sem precisar clicar no botão de teste.
@@ -61,7 +67,7 @@ Quando os testes derem certo, lembre-se de ativar o gatilho principal marcando a
 ---
 
 > **⚠️ Nota Técnica: O Problema das Variáveis de Ambiente no N8N**
-> 
-> Durante o desenvolvimento deste projeto, constatei que não é possível injetar variáveis de ambiente do Docker diretamente no *Credentials Manager* utilizando expressões (ex: `={{ $env.TELEGRAM_BOT_TOKEN }}`). 
-> 
+>
+> Durante o desenvolvimento deste projeto, constatei que não é possível injetar variáveis de ambiente do Docker diretamente no *Credentials Manager* utilizando expressões (ex: `={{ $env.TELEGRAM_BOT_TOKEN }}`).
+>
 > Segundo pesquisas que fiz, isso ocorre porque o núcleo de segurança do N8N avalia propositalmente essas expressões de ambiente como `undefined` no escopo das credenciais geradas pela UI, visando impedir ataques de roubo de injeção em instâncias hospedadas em nuvem. Para contornar cenários em que as credenciais devem obrigatoriamente derivar de um contêiner automatizado ou `.env`, a solução sustentável (não demonstrada aqui) seria utilizar o recurso `CREDENTIALS_OVERWRITE_DATA` do n8n dentro do `docker-compose.yml`. Como esta via exige alteração avançada de variáveis, a abordagem simplificada escolhida foi a inserção manual orientada nas etapas acima.
