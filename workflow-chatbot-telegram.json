@@ -8,13 +8,13 @@
         ],
         "additionalFields": {}
       },
-      "id": "2bcac993-fe80-41ff-80c4-f5dddf9aa405",
+      "id": "dbdf8239-7489-4cd7-95e8-9143707dd6ab",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
-        224,
-        304
+        -1040,
+        -32
       ],
       "webhookId": "f7def667-bb89-4d6d-8bc3-3b1eb0c8cf8e",
       "credentials": {
@@ -28,13 +28,13 @@
       "parameters": {
         "jsCode": "const text = $input.item.json.message.text || '';\nconst queue = text.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase();\nreturn { queue };"
       },
-      "id": "e44431d1-6784-4822-ba78-75c1284fbfac",
+      "id": "02cc12fe-63bb-4214-a6b2-03d06a525454",
       "name": "Format Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        448,
-        304
+        -816,
+        -32
       ]
     },
     {
@@ -47,7 +47,7 @@
           "parameters": [
             {
               "name": "q",
-              "value": "={{ $json.queue }}"
+              "value": "={{ $('Format Input').item.json.queue }}"
             },
             {
               "name": "units",
@@ -67,13 +67,13 @@
           }
         }
       },
-      "id": "fb212ae1-0266-41dd-a36c-9ba168969f69",
+      "id": "4953c767-97d6-4ca9-a7b5-49a2031294cf",
       "name": "OpenWeather API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        672,
-        304
+        -288,
+        160
       ],
       "credentials": {
         "httpQueryAuth": {
@@ -106,43 +106,43 @@
         },
         "options": {}
       },
-      "id": "3be587fe-f198-4ad0-a9cf-dd37803a64d1",
+      "id": "ed988751-3767-41c7-b198-36ec7fb1be14",
       "name": "Check Response",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        880,
-        304
+        -112,
+        160
       ]
     },
     {
       "parameters": {
-        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\n\n// Obtém o código do ícone da API da Open Weather\nconst iconCode = $input.first().json.weather[0].icon;\nlet emoji = '🌤'; // padrão\n\n// Dicionário de Correlação dos Ícones Climáticos\nconst iconMap = {\n  '01d': '☀️', '01n': '🌑', \n  '02d': '🌤', '02n': '☁️',\n  '03d': '☁️', '03n': '☁️',\n  '04d': '☁️', '04n': '☁️',\n  '09d': '🌧', '09n': '🌧',\n  '10d': '🌦', '10n': '🌧',\n  '11d': '⛈', '11n': '⛈',\n  '13d': '❄️', '13n': '❄️',\n  '50d': '🌫', '50n': '🌫'\n};\n\nif (iconMap[iconCode]) {\n  emoji = iconMap[iconCode];\n}\n\nconst message = `${emoji} A temperatura em ${city} é de ${temp}°C.`;\n\nreturn { \n  message: message, \n  condition: $input.first().json.weather[0].description,\n  ok: true\n};\n"
+        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\n\n// Obt\u00e9m o c\u00f3digo do \u00edcone da API da Open Weather\nconst iconCode = $input.first().json.weather[0].icon;\nlet emoji = '\ud83c\udf24'; // padr\u00e3o\n\n// Dicion\u00e1rio de Correla\u00e7\u00e3o dos \u00cdcones Clim\u00e1ticos\nconst iconMap = {\n  '01d': '\u2600\ufe0f', '01n': '\ud83c\udf11', \n  '02d': '\ud83c\udf24', '02n': '\u2601\ufe0f',\n  '03d': '\u2601\ufe0f', '03n': '\u2601\ufe0f',\n  '04d': '\u2601\ufe0f', '04n': '\u2601\ufe0f',\n  '09d': '\ud83c\udf27', '09n': '\ud83c\udf27',\n  '10d': '\ud83c\udf26', '10n': '\ud83c\udf27',\n  '11d': '\u26c8', '11n': '\u26c8',\n  '13d': '\u2744\ufe0f', '13n': '\u2744\ufe0f',\n  '50d': '\ud83c\udf2b', '50n': '\ud83c\udf2b'\n};\n\nif (iconMap[iconCode]) {\n  emoji = iconMap[iconCode];\n}\n\nconst message = `${emoji} A temperatura em ${city} \u00e9 de ${temp}\u00b0C.`;\n\nreturn { \n  message: message, \n  condition: $input.first().json.weather[0].description,\n  ok: true\n};\n"
       },
-      "id": "7fa12bf1-f2cb-465f-ac22-e4210d1fa7a8",
+      "id": "0095893d-be05-4da6-a610-2512d86e60dc",
       "name": "Format Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1104,
-        192
+        288,
+        -208
       ]
     },
     {
       "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "❌ Cidade não encontrada. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR).",
+        "text": "\u274c Cidade n\u00e3o encontrada. Use o formato Cidade,UF,BR (ex.: S\u00e3o Paulo,SP,BR).",
         "additionalFields": {
           "appendAttribution": false
         }
       },
-      "id": "766ccecc-7299-4c8d-8a5f-0a0fc40e909a",
+      "id": "0f23d6b4-f739-4750-bbbc-d434f0e58f07",
       "name": "Send Error Message",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        1104,
-        432
+        80,
+        336
       ],
       "webhookId": "b9466aac-086b-42ef-b09e-f8129a5adfb2",
       "credentials": {
@@ -158,13 +158,13 @@
           "temperature": 0.2
         }
       },
-      "id": "d0494dfa-c5ad-4d43-9ce6-5fe1ceb27cb0",
+      "id": "626d5451-07d9-45a0-9b3f-85e7d623eec3",
       "name": "Google Gemini",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        1424,
-        400
+        448,
+        160
       ],
       "credentials": {
         "googlePalmApi": {
@@ -181,13 +181,13 @@
           "appendAttribution": false
         }
       },
-      "id": "3d596ac1-b1e6-42d4-ba5f-2b36365ea0ab",
+      "id": "13384a75-d830-4cfd-8b56-cb595d132525",
       "name": "Send AI Message",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        1664,
-        48
+        752,
+        -240
       ],
       "webhookId": "1e89b9a7-8878-4aff-9ea9-fa1e99525ce3",
       "credentials": {
@@ -205,13 +205,13 @@
           "appendAttribution": false
         }
       },
-      "id": "fallback-node-tg",
+      "id": "3f78b732-392c-42d8-8bc7-d492b58f3a73",
       "name": "Fallback Message",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        1680,
-        304
+        752,
+        96
       ],
       "webhookId": "86fd96b6-22b1-4369-9263-e09dede1b450",
       "credentials": {
@@ -224,17 +224,108 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Você é um assistente responsável por melhorar mensagens de previsão do tempo vindas de uma API.\n\nSua tarefa é reescrever a mensagem original tornando-a mais natural, clara e agradável para leitura humana.\n\n---\n\n### 🎯 REGRA PRINCIPAL (OBRIGATÓRIA - NUNCA QUEBRAR)\nA mensagem final deve sempre:\n- Ser natural e fluida em português do Brasil\n- Estar correta gramaticalmente\n- Ser clara e fácil de entender\n- Manter fidelidade total aos dados da API\n- Resolver ambiguidades (ex: diferenciar cidade, estado, país)\n\nSe qualquer outra regra entrar em conflito com esta, IGNORE a outra regra.\n\n---\n\n### 🌎 REGIONALISMO (OPCIONAL E CONTROLADO)\nVocê pode adaptar levemente o tom usando expressões regionais brasileiras, desde que:\n\n- NÃO prejudique clareza ou compreensão\n- NÃO use gírias excessivas ou caricatas\n- NÃO force regionalismo se não for natural\n- A frase ainda deve ser compreendida por qualquer brasileiro\n\nExemplos aceitáveis:\n- \"Por lá\" em vez de repetir o local\n- Pequenas variações de tom (ex: “clima agradável”, “tempo firme”)\n\nExemplos NÃO aceitáveis:\n- Gírias pesadas ou muito locais (ex: \"bah tri frio\", \"mano mó calor\")\n- Linguagem informal demais\n- Qualquer coisa que pareça estereotipada\n\nSe houver dúvida, NÃO use regionalismo.\n\n---\n\n### 📏 REGRAS GERAIS\n- NÃO altere os dados (temperatura, local, condição)\n- NÃO invente informações\n- Pode reorganizar a frase livremente\n- Pode adicionar contexto leve (ex: “neste momento”, “agora”)\n- Emojis são opcionais\n\n---\n\n### 📥 Entrada\n {{ $json.message }}, {{ $json.condition }}\n---\n\n### 📤 Saída\nRetorne apenas a mensagem final melhorada, sem explicações\n"
+        "text": "=Voc\u00ea \u00e9 um assistente respons\u00e1vel por melhorar mensagens de previs\u00e3o do tempo vindas de uma API.\n\nSua tarefa \u00e9 reescrever a mensagem original tornando-a mais natural, clara e agrad\u00e1vel para leitura humana.\n\n---\n\n### \ud83c\udfaf REGRA PRINCIPAL (OBRIGAT\u00d3RIA - NUNCA QUEBRAR)\nA mensagem final deve sempre:\n- Ser natural e fluida em portugu\u00eas do Brasil\n- Estar correta gramaticalmente\n- Ser clara e f\u00e1cil de entender\n- Manter fidelidade total aos dados da API\n- Resolver ambiguidades (ex: diferenciar cidade, estado, pa\u00eds)\n\nSe qualquer outra regra entrar em conflito com esta, IGNORE a outra regra.\n\n---\n\n### \ud83c\udf0e REGIONALISMO (OPCIONAL E CONTROLADO)\nVoc\u00ea pode adaptar levemente o tom usando express\u00f5es regionais brasileiras, desde que:\n\n- N\u00c3O prejudique clareza ou compreens\u00e3o\n- N\u00c3O use g\u00edrias excessivas ou caricatas\n- N\u00c3O force regionalismo se n\u00e3o for natural\n- A frase ainda deve ser compreendida por qualquer brasileiro\n\nExemplos aceit\u00e1veis:\n- \"Por l\u00e1\" em vez de repetir o local\n- Pequenas varia\u00e7\u00f5es de tom (ex: \u201cclima agrad\u00e1vel\u201d, \u201ctempo firme\u201d)\n\nExemplos N\u00c3O aceit\u00e1veis:\n- G\u00edrias pesadas ou muito locais (ex: \"bah tri frio\", \"mano m\u00f3 calor\")\n- Linguagem informal demais\n- Qualquer coisa que pare\u00e7a estereotipada\n\nSe houver d\u00favida, N\u00c3O use regionalismo.\n\n---\n\n### \ud83d\udccf REGRAS GERAIS\n- N\u00c3O altere os dados (temperatura, local, condi\u00e7\u00e3o)\n- N\u00c3O invente informa\u00e7\u00f5es\n- Pode reorganizar a frase livremente\n- Pode adicionar contexto leve (ex: \u201cneste momento\u201d, \u201cagora\u201d)\n- Emojis s\u00e3o opcionais\n\n---\n\n### \ud83d\udce5 Entrada\n {{ $json.message }}, {{ $json.condition }}\n---\n\n### \ud83d\udce4 Sa\u00edda\nRetorne apenas a mensagem final melhorada, sem explica\u00e7\u00f5es\n"
       },
-      "id": "e3a89047-97d8-4f93-86f7-abc123456789",
+      "id": "4a0ba9be-23f3-45d3-b4b5-88c56e93941b",
       "name": "AI Text Enhancer",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.4,
       "position": [
-        1344,
-        192
+        448,
+        -80
       ],
       "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{ $json.queue }}"
+      },
+      "id": "ec0b3cf5-b3ec-4890-a625-6a11c00fe93f",
+      "name": "Redis GET",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -32
+      ],
+      "credentials": {
+        "redis": {
+          "id": "K3MUKEWhy9Xj8HXJ",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "abc-if",
+              "leftValue": "={{ $json.propertyName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1303f60e-21c2-4485-86d0-9d5fa8d5c0f3",
+      "name": "IF Cached",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const obj = JSON.parse($input.item.json.propertyName);\nreturn obj;"
+      },
+      "id": "71f5db72-255d-4d39-bb76-7ba0a2409197",
+      "name": "Parse Cache",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $node[\"Format Input\"].json[\"queue\"] }}",
+        "value": "={{ JSON.stringify($json) }}",
+        "options": {
+          "expire": true,
+          "expireTime": 900
+        }
+      },
+      "id": "1f9dc293-e342-4c4f-892f-5a1c0daccf0c",
+      "name": "Redis SET",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        80,
+        160
+      ],
+      "credentials": {
+        "redis": {
+          "id": "K3MUKEWhy9Xj8HXJ",
+          "name": "Redis account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -254,7 +345,7 @@
       "main": [
         [
           {
-            "node": "OpenWeather API",
+            "node": "Redis GET",
             "type": "main",
             "index": 0
           }
@@ -276,7 +367,7 @@
       "main": [
         [
           {
-            "node": "Format Result",
+            "node": "Redis SET",
             "type": "main",
             "index": 0
           }
@@ -329,15 +420,66 @@
           }
         ]
       ]
+    },
+    "Redis GET": {
+      "main": [
+        [
+          {
+            "node": "IF Cached",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Cached": {
+      "main": [
+        [
+          {
+            "node": "Parse Cache",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenWeather API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Cache": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis SET": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "ad3f0b85-33dc-4890-b41b-7fb57f843c2b",
+  "versionId": "ca8ea738-3c73-41ca-9669-c1726464ae20",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f814927797f32f217cd3e520758cda8c4caaec080ea7137fd53477c2b3ebaaa6"

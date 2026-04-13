@@ -1,3 +1,4 @@
+# Chatbot de Clima do Telegram 🌦️
 
 ![diagram.png](diagram.png)
 
@@ -48,6 +49,46 @@ Esse passo foi configurado usando uma Corrente Básica de IA (Basic LLM Chain) c
 1. Crie ou recupere sua chave de API gratuitamente em `aistudio.google.com/app/apikey`.
 2. No n8n acesse: **Credentials > Add Credential**, busque por **Google Gemini API** e insira a chave gerada.
 3. Feito isso, conecte a credencial criada no nó **Google Gemini** (que atua como cérebro conectado ao nó principal "AI Text Enhancer").
+
+## 📦 Configuração do Cache (Redis)
+
+O projeto conta com um sistema de cache no fluxo para aliviar o número de requisições na API do OpenWeather, armazenando temporariamente os dados climáticos pesquisados. 
+Para sua comodidade, a credencial de conexão ao Redis já vem **previamente configurada** no arquivo `docker-compose.yml` e nos nós importados (utilizando o *host* da rede Docker local). Não é necessária configuração manual adicional se você estiver implantando os containers pelo *Compose* nativo do repositório.
+
+## 📄 Variáveis de Ambiente (`.env-example`)
+
+O projeto inclui um arquivo `.env-example` que serve como dicionário de referência para as ferramentas Docker, túneis e n8n. Abaixo detalhamos a função de cada chave:
+
+| Variável | Descrição |
+| :--- | :--- |
+| `N8N_ENCRYPTION_KEY` | Chave de segurança para criptografar as credenciais sensíveis dentro do banco de dados do n8n. |
+| `NGROK_AUTH_TOKEN` | Token do Ngrok para criar túneis que expõem o n8n para a internet (útil para registrar webhooks do Telegram). |
+| `WEBHOOK_URL` | A URL pública base do seu servidor n8n (fornecida pelo provedor de túnel ou seu domínio). Ex: `https://meu-n8n.ngrok.app`. |
+| `CLOUDFLARE_TUNNEL_TOKEN` | Token do seu Cloudflare Tunnel para realizar a rota de exposição segura (se utilizar o cloudflared). |
+| `N8N_API_KEY` | Chave de API estática do n8n (usada pelo serviço local MCP ou acesso programático). |
+| `N8N_HOST` | O endereço base do host local do servidor n8n (padrão: `http://localhost:5678/`). |
+| `OPENWEATHER_API_KEY` | Sua chave de segurança na API do OpenWeather, caso queira passar por variáveis. |
+| `TELEGRAM_BOT_TOKEN` | O token de autenticação bot gerado pelo BotFather do Telegram, caso queira passar por variáveis. |
+
+## 🛠️ Troubleshooting (Solução de Problemas)
+
+Abaixo listamos os erros mais comuns reportados no setup e uso da aplicação e as devidas resoluções:
+
+**1. O Bot não responde a nenhuma mensagem**
+*   **Motivo:** Workflow inativo ou o gatilho (Trigger) do Telegram sem credencial selecionada.
+*   **Solução:** Confirme se a credencial do Telegram que você criou foi selecionada nos 3 nós do Telegram. Na parte superior do Workflow, mova também o botão deslizante para **"Active"**. 
+
+**2. Erro de autenticação contínua no OpenWeather (`401 Unauthorized`)**
+*   **Motivo:** A credencial foi configurada de maneira errada ou acabou de ser gerada.
+*   **Solução:** Se a chave é nova, aguarde de 10 a 30 minutos, pois o OpenWeather possui um delay de reindexação. Verifique também em "Query Auth" se utilizou a estrutura: **Name:** `appid` / **Value:** `SuaKey`.
+
+**3. Falha de Conexão nos Nós do Redis (Node Execute Error)**
+*   **Motivo:** O *container* do banco de dados Redis não subiu na infraestrutura do Docker.
+*   **Solução:** Verifique no terminal ou app *Docker Desktop* se o container contendo a imagem do `redis` está no status "Running". Reinicie os serviços usando `docker-compose up -d`.
+
+**4. A inteligência do Gemini nunca responde, apenas as respostas estáticas**
+*   **Motivo:** O nó de chat do Google Gemini falhou em autenticar via API.
+*   **Solução:** Certifique-se de que criou sua API no AI Studio e selecionou corretamente a nova credencial no nó secundário rotulado com "Google Gemini Chat Model".
 
 ## ✅ Testando e Executando o Chatbot
 
