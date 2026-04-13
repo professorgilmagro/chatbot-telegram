@@ -117,7 +117,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\nconst message = `🌤 A temperatura em ${city} é de ${temp}°C.`;\nreturn { \n  message: message, \n  condition: $input.first().json.weather[0].description,\n  ok: true\n};"
+        "jsCode": "const temp = Math.round($input.item.json.main.temp);\nconst city = $input.item.json.name;\n\n// Obtém o código do ícone da API da Open Weather\nconst iconCode = $input.first().json.weather[0].icon;\nlet emoji = '🌤'; // padrão\n\n// Dicionário de Correlação dos Ícones Climáticos\nconst iconMap = {\n  '01d': '☀️', '01n': '🌑', \n  '02d': '🌤', '02n': '☁️',\n  '03d': '☁️', '03n': '☁️',\n  '04d': '☁️', '04n': '☁️',\n  '09d': '🌧', '09n': '🌧',\n  '10d': '🌦', '10n': '🌧',\n  '11d': '⛈', '11n': '⛈',\n  '13d': '❄️', '13n': '❄️',\n  '50d': '🌫', '50n': '🌫'\n};\n\nif (iconMap[iconCode]) {\n  emoji = iconMap[iconCode];\n}\n\nconst message = `${emoji} A temperatura em ${city} é de ${temp}°C.`;\n\nreturn { \n  message: message, \n  condition: $input.first().json.weather[0].description,\n  ok: true\n};\n"
       },
       "id": "7fa12bf1-f2cb-465f-ac22-e4210d1fa7a8",
       "name": "Format Result",
@@ -331,13 +331,13 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "a8746779-4df7-4b13-be69-1c8eb233edd8",
+  "versionId": "ad3f0b85-33dc-4890-b41b-7fb57f843c2b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f814927797f32f217cd3e520758cda8c4caaec080ea7137fd53477c2b3ebaaa6"
